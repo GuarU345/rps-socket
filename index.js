@@ -1,19 +1,21 @@
-const express = require("express");
-const http = require("http");
-const cors = require("cors");
+const { createServer } = require("http");
 const os = require("os");
 const { Server } = require("socket.io");
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-app.use(cors());
+const httpServer = createServer();
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://192.168.1.30:5173",
+  },
+});
 
 let players = [];
 
 io.on("connection", (socket) => {
   console.log(`usuario conectado ${socket.id}`);
+
+  socket.on("newRoomCreated", (newRoom) => {
+    io.emit("roomDataUpdated", () => {});
+  });
 
   players.push(socket);
   console.log(players.length);
@@ -72,6 +74,4 @@ function getIPAddress() {
   return "127.0.0.1"; // Dirección IP por defecto si no se puede detectar automáticamente
 }
 
-server.listen(PORT, () => {
-  console.log(`server listening on ${PORT}`);
-});
+httpServer.listen(PORT);
