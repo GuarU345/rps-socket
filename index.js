@@ -13,8 +13,14 @@ let players = [];
 io.on("connection", (socket) => {
   console.log(`usuario conectado ${socket.id}`);
 
-  socket.on("newRoomCreated", (newRoom) => {
-    io.emit("roomDataUpdated", () => {});
+  socket.on("newRoomCreated", () => {
+    console.log(`nueva sala creada`);
+    io.emit("roomDataUpdated");
+  });
+
+  socket.on("playerGoToRoom", () => {
+    console.log("new player waiting in room");
+    io.emit("playerInRoom");
   });
 
   players.push(socket);
