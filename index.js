@@ -14,22 +14,22 @@ io.on("connection", (socket) => {
   console.log(`usuario conectado ${socket.id}`);
 
   socket.on("newRoomCreated", () => {
-    console.log(`nueva sala creada`);
     io.emit("roomDataUpdated");
   });
 
   socket.on("playerGoToRoom", () => {
-    console.log("new player waiting in room");
     io.emit("playerInRoom");
   });
 
   players.push(socket);
   console.log(players.length);
-  if (players.length === 2) {
+
+  socket.on("game_ready", () => {
     io.emit("game_start");
-  }
+  });
 
   socket.on("choice", (choice) => {
+    console.log(choice);
     socket.choice = choice;
 
     if (players.every((player) => player.choice !== undefined)) {
@@ -55,13 +55,18 @@ function compareChoices() {
     (choice1 === "tijeras" && choice2 === "papel") ||
     (choice1 === "papel" && choice2 === "piedra")
   ) {
-    result = "Jugador 1 gana";
+    result = {
+      text: "Jugador 1 gana",
+    };
   } else {
-    result = "Jugador 2 gana";
+    result = {
+      text: "Jugador 2 gana",
+    };
   }
 
   players[0].emit("game_result", result);
   players[1].emit("game_result", result);
+  console.log(result);
 }
 
 const IP_ADDRESS = getIPAddress();
@@ -80,4 +85,6 @@ function getIPAddress() {
   return "127.0.0.1"; // Dirección IP por defecto si no se puede detectar automáticamente
 }
 
-httpServer.listen(PORT);
+httpServer.listen(PORT, () => {
+  console.log(`server listening on port ${PORT}`);
+});
