@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://192.168.1.30:5173",
+    origin: "http://192.168.1.5:5173",
   },
 });
 
@@ -28,9 +28,10 @@ io.on("connection", (socket) => {
     io.emit("game_start");
   });
 
-  socket.on("choice", (choice) => {
+  socket.on("choice", (choice, user) => {
     console.log(choice);
     socket.choice = choice;
+    socket.user = user;
 
     if (players.every((player) => player.choice !== undefined)) {
       compareChoices();
@@ -40,33 +41,44 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log(`Usuario desconectado: ${socket.id}`);
     players = players.filter((player) => player !== socket);
+    io.emit("logout");
   });
 });
 
 function compareChoices() {
   const choice1 = players[0].choice;
   const choice2 = players[1].choice;
+  const player1 = players[0].user;
+  const player2 = players[1].user;
+
+  const player1Selection = {
+    choice1,
+    player1,
+  };
+
+  const player2Selection = {
+    choice2,
+    player2,
+  };
 
   let result;
-  if (choice1 === choice2) {
+  if (player1Selection.choice1 === player2Selection.choice2) {
     result = "Empate";
   } else if (
-    (choice1 === "piedra" && choice2 === "tijeras") ||
-    (choice1 === "tijeras" && choice2 === "papel") ||
-    (choice1 === "papel" && choice2 === "piedra")
+    (player1Selection.choice1 === "rock" &&
+      player2Selection.choice2 === "scissors") ||
+    (player1Selection.choice1 === "scissors" &&
+      player2Selection.choice2 === "paper") ||
+    (player1Selection.choice1 === "paper" &&
+      player2Selection.choice2 === "rock")
   ) {
-    result = {
-      text: "Jugador 1 gana",
-    };
-  } else {
-    result = {
-      text: "Jugador 2 gana",
-    };
+    if (player1Selection.player1 === undefined) {
+      result = `${player2Selection.player2}`;
+    } else {
+      result = `${player1Selection.player1}`;
+    }
   }
-
-  players[0].emit("game_result", result);
-  players[1].emit("game_result", result);
-  console.log(result);
+  io.emit("game_result", player1Selection, player2Selection);
 }
 
 const IP_ADDRESS = getIPAddress();
