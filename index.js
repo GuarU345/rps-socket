@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://192.168.1.5:5173",
+    origin: "http://192.168.1.30:5173",
   },
 });
 
@@ -38,6 +38,10 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("continue_game", () => {
+    io.emit("restart_game");
+  });
+
   socket.on("disconnect", () => {
     console.log(`Usuario desconectado: ${socket.id}`);
     players = players.filter((player) => player !== socket);
@@ -62,6 +66,7 @@ function compareChoices() {
   };
 
   let result;
+  let result2;
   if (player1Selection.choice1 === player2Selection.choice2) {
     result = "Empate";
   } else if (
@@ -72,13 +77,29 @@ function compareChoices() {
     (player1Selection.choice1 === "paper" &&
       player2Selection.choice2 === "rock")
   ) {
-    if (player1Selection.player1 === undefined) {
-      result = `${player2Selection.player2}`;
-    } else {
-      result = `${player1Selection.player1}`;
-    }
+    console.log(player1Selection.player1);
+    console.log(player2Selection.player2);
+
+    result = {
+      userId: `${player1Selection.player1}`,
+      win: "Ganaste",
+    };
+    result2 = {
+      userId: `${player2Selection.player2}`,
+      win: "Perdiste",
+    };
+    io.emit("game_result", result, result2);
+  } else {
+    result = {
+      userId: `${player2Selection.player2}`,
+      win: "Ganaste",
+    };
+    result2 = {
+      userId: `${player1Selection.player1}`,
+      win: "Perdiste",
+    };
   }
-  io.emit("game_result", player1Selection, player2Selection);
+  io.emit("game_result", result, result2);
 }
 
 const IP_ADDRESS = getIPAddress();
