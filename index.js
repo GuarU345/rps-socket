@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://192.168.1.30:5173",
+    origin: "http://192.168.1.8:5173",
   },
 });
 
@@ -69,6 +69,8 @@ function compareChoices() {
   let result2;
   if (player1Selection.choice1 === player2Selection.choice2) {
     result = "Empate";
+    result2 = "Empate";
+    io.emit("game_result", result, result2);
   } else if (
     (player1Selection.choice1 === "rock" &&
       player2Selection.choice2 === "scissors") ||
@@ -88,7 +90,6 @@ function compareChoices() {
       userId: `${player2Selection.player2}`,
       win: "Perdiste",
     };
-    io.emit("game_result", result, result2);
   } else {
     result = {
       userId: `${player2Selection.player2}`,
