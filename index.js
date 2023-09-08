@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://192.168.1.8:5173",
+    origin: "http://192.168.1.30:5173",
   },
 });
 
@@ -39,7 +39,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("continue_game", () => {
-    io.emit("restart_game");
+    resetGame();
   });
 
   socket.on("disconnect", () => {
@@ -102,6 +102,13 @@ function compareChoices() {
   }
   io.emit("game_result", result, result2);
 }
+
+const resetGame = () => {
+  players.forEach((player) => {
+    player.choice = undefined;
+  });
+  io.emit("reset_game");
+};
 
 const IP_ADDRESS = getIPAddress();
 const PORT = process.env.PORT || 4000;
