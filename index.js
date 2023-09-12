@@ -2,9 +2,10 @@ const { createServer } = require("http");
 const os = require("os");
 const { Server } = require("socket.io");
 const httpServer = createServer();
+const isDev = true;
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: isDev ? process.env.LOCAL_FRONT_URL : "",
   },
 });
 
