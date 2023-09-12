@@ -4,7 +4,7 @@ const { Server } = require("socket.io");
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://192.168.1.30:5173",
+    origin: "http://localhost:5173",
   },
 });
 
@@ -24,8 +24,8 @@ io.on("connection", (socket) => {
   players.push(socket);
   console.log(players.length);
 
-  socket.on("game_ready", () => {
-    io.emit("game_start");
+  socket.on("game_ready", (room_id) => {
+    io.emit("game_start", room_id);
   });
 
   socket.on("choice", (choice, user) => {
@@ -40,6 +40,10 @@ io.on("connection", (socket) => {
 
   socket.on("continue_game", () => {
     resetGame();
+  });
+
+  socket.on("leave_room", () => {
+    io.emit("leave_room");
   });
 
   socket.on("disconnect", () => {
