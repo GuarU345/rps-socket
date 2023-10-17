@@ -25,8 +25,8 @@ io.on("connection", (socket) => {
   players.push(socket);
   console.log(players.length);
 
-  socket.on("game_ready", (room_id) => {
-    io.emit("game_start", room_id);
+  socket.on("game_ready", (room_id, dataOfGame) => {
+    io.emit("game_start", room_id, dataOfGame);
   });
 
   socket.on("choice", (choice, user) => {
@@ -41,6 +41,10 @@ io.on("connection", (socket) => {
 
   socket.on("continue_game", () => {
     resetGame();
+  });
+
+  socket.on("updateScore", (data) => {
+    io.emit("scoreUpdated", data);
   });
 
   socket.on("leave_room", () => {
@@ -115,21 +119,7 @@ const resetGame = () => {
   io.emit("reset_game");
 };
 
-const IP_ADDRESS = getIPAddress();
 const PORT = process.env.PORT || 4000;
-
-function getIPAddress() {
-  const interfaces = os.networkInterfaces();
-  for (const interfaceName in interfaces) {
-    const interfaceData = interfaces[interfaceName];
-    for (const data of interfaceData) {
-      if (data.family === "IPv4" && !data.internal) {
-        return data.address;
-      }
-    }
-  }
-  return "127.0.0.1"; // Dirección IP por defecto si no se puede detectar automáticamente
-}
 
 httpServer.listen(PORT, () => {
   console.log(`server listening on port ${PORT}`);
